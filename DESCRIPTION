@@ -10,7 +10,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1.9000
 Imports: 
     cli,
+    ComplexHeatmap,
     dynamicTreeCut,
     igraph,
+    RColorBrewer,
     rlang (>= 1.1.0),
-    stats
+    stats,
+    viridisLite

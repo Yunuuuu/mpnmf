@@ -3,6 +3,7 @@
 S3method(print,mpnmf)
 export(mp)
 export(mp_coverage)
+export(mp_heatmap)
 export(mp_programs)
 export(mp_samples)
 export(mp_scores)
