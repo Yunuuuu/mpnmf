@@ -19,13 +19,13 @@ mp(
   ids = NULL
 )
 
-\method{print}{mpnmf}(x, s_min = NULL, ...)
+\method{print}{mpnmf}(x, s_min = 3L, ...)
 
-mp_programs(x, s_min = NULL)
+mp_programs(x, s_min = 3L)
 
-mp_scores(x, s_min = NULL)
+mp_scores(x, s_min = 3L)
 
-mp_signatures(x, s_min = NULL, n_signatures = 20L)
+mp_signatures(x, s_min = 3L, n_signatures = 20L)
 }
 \arguments{
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
@@ -33,7 +33,7 @@ mp_signatures(x, s_min = NULL, n_signatures = 20L)
 
 \item{cor_method}{A character string indicating which correlation coefficient
 (or covariance) is to be computed. One of "pearson" (default), "kendall", or
-"spearman": can be abbreviated. See \link{cor}.}
+"spearman": can be abbreviated. Details see \link{cor}.}
 
 \item{cor_min}{Program-program similarity were filtered out if their
 connections were smaller (or equal) than \code{cor_min} individual tumor modules.
@@ -43,8 +43,9 @@ Default: \code{0.3}.}
 representation of Program-program similarity matrix.}
 
 \item{cluster}{A character string or function indicating how to clustering
-the Program-program similarity matrix. Default: if repr is "tree",
-cluster will be "ward.D2", if repr is "graph", cluster will be "infomap".}
+the program-program similarity matrix. Default: if repr is \code{"tree"},
+cluster will be \code{"ward.D2"}, if repr is \code{"graph"}, cluster will be
+\code{"infomap"}.}
 
 \item{dynamic}{A boolean value indicates whether to use
 \link[dynamicTreeCut:cutreeDynamic]{cutreeDynamic} to define the tree groups.
@@ -59,7 +60,7 @@ function (when \code{cluster} was passed as a function, ...  will not be used).}
 \item{x}{A \code{mpnmf} object.}
 
 \item{s_min}{A scalar integer indicates the minimal number of samples to
-define the meta program.}
+define the meta program. Default: \code{3}.}
 
 \item{n_signatures}{A scalar integer to specify the number of features to
 define the program signature.}
@@ -70,7 +71,7 @@ define the program signature.}
 \item \code{mp_programs}: A list of meta programs.
 \item \code{mp_samples}: A list of samples define the meta programs.
 \item \code{mp_scores}: A list of meta program scores, which were defined as the mean
-NMF factor basis of component programs.
+NMF factor basis across the component programs.
 }
 
 In addition, following attributes are attached with this object
@@ -88,10 +89,10 @@ Identify meta programs.
 If \code{repr} is \code{tree}, \link[stats:hclust]{hclust} will be used to define the tree
 structrue, then \link[stats:cutree]{cutree} or
 \link[dynamicTreeCut:cutreeDynamic]{cutreeDynamic} will be used to cut the tree
-into groups, in this way, cluster must be a string to define hclust method or
-a function accepts a \link[stats:dist]{dist} object and return a
-\link[stats:hclust]{hclust} object. Otherwise, cluster must be the suffix of any
-igraph community detection algorithm or a function accepts a
+into groups, in this way, \code{cluster} must be a string to define hclust method
+or a function accepts a \link[stats:dist]{dist} object and return a
+\link[stats:hclust]{hclust} object. Otherwise, \code{cluster} must be the suffix of
+any igraph community detection algorithm or a function accepts a
 \link[igraph:make_graph]{graph} object and return a \link[igraph:communities]{communities}
 object. For example, cluster="louvain" will use
 \link[igraph:cluster_louvain]{cluster_louvain}.

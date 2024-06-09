@@ -4,10 +4,10 @@
 #' If `repr` is `tree`, [hclust][stats::hclust] will be used to define the tree
 #' structrue, then [cutree][stats::cutree] or
 #' [cutreeDynamic][dynamicTreeCut::cutreeDynamic] will be used to cut the tree
-#' into groups, in this way, cluster must be a string to define hclust method or
-#' a function accepts a [dist][stats::dist] object and return a
-#' [hclust][stats::hclust] object. Otherwise, cluster must be the suffix of any
-#' igraph community detection algorithm or a function accepts a
+#' into groups, in this way, `cluster` must be a string to define hclust method
+#' or a function accepts a [dist][stats::dist] object and return a
+#' [hclust][stats::hclust] object. Otherwise, `cluster` must be the suffix of
+#' any igraph community detection algorithm or a function accepts a
 #' [graph][igraph::graph] object and return a [communities][igraph::communities]
 #' object. For example, cluster="louvain" will use
 #' [cluster_louvain][igraph::cluster_louvain].
@@ -17,15 +17,16 @@
 #' @param ids Sample identifiers, must be the same length of nmf_factors.
 #' @param cor_method A character string indicating which correlation coefficient
 #' (or covariance) is to be computed. One of "pearson" (default), "kendall", or
-#' "spearman": can be abbreviated. See [cor].
+#' "spearman": can be abbreviated. Details see [cor].
 #' @param cor_min Program-program similarity were filtered out if their
 #' connections were smaller (or equal) than `cor_min` individual tumor modules.
 #' Default: `0.3`.
 #' @param repr A character string of "tree" or "graph" indicates the structure
 #' representation of Program-program similarity matrix.
 #' @param cluster A character string or function indicating how to clustering
-#' the Program-program similarity matrix. Default: if repr is "tree",
-#' cluster will be "ward.D2", if repr is "graph", cluster will be "infomap".
+#' the program-program similarity matrix. Default: if repr is `"tree"`,
+#' cluster will be `"ward.D2"`, if repr is `"graph"`, cluster will be
+#' `"infomap"`.
 #' @param dynamic A boolean value indicates whether to use
 #' [cutreeDynamic][dynamicTreeCut::cutreeDynamic] to define the tree groups.
 #' Only be used when repr is "tree".
@@ -42,8 +43,8 @@
 #'  - `mp_programs`: A list of meta programs.
 #'  - `mp_samples`: A list of samples define the meta programs.
 #'  - `mp_scores`: A list of meta program scores, which were defined as the mean
-#'                 NMF factor basis of component programs.
-#' 
+#'                 NMF factor basis across the component programs.
+#'
 #' In addition, following attributes are attached with this object
 #'  - `similarity`: similarity matrix.
 #'  - `stats`: A list of statistics for tree or graph object
@@ -167,11 +168,11 @@ mp <- function(nmf_factors,
                 args$h <- max(hcl$height) / 2
             } else if (!is.null(args$h) && !is_scalar(args$h)) {
                 cli::cli_abort(
-                    "{.arg h} must be a scalar to define the extract tree groups"
+                    "{.arg h} must be a scalar to define the exact tree groups"
                 )
             } else if (!is.null(args$k) && !is_scalar(args$k)) {
                 cli::cli_abort(
-                    "{.arg k} must be a scalar to define the extract tree groups"
+                    "{.arg k} must be a scalar to define the exact tree groups"
                 )
             }
             members <- do.call(stats::cutree, c(list(tree = hcl), args))
@@ -188,7 +189,7 @@ mp <- function(nmf_factors,
                 cli::cli_abort("{.arg cluster} must be a scalar string")
             }
             cluster <- utils::getFromNamespace(
-                paste0("cluster_", cluster),
+                paste("cluster", cluster, sep = "_"),
                 ns = "igraph"
             )
             comm <- cluster(graph = g, ...)
@@ -200,7 +201,11 @@ mp <- function(nmf_factors,
             }
         } else {
             cli::cli_abort(
-                "{.arg cluster} must be a function a character string"
+                paste(
+                    "{.arg cluster} must be a string to define the `cluster_*`",
+                    "method or a function accepts a `graph` object",
+                    "and returns a `communities` object"
+                )
             )
         }
         members <- factor(igraph::membership(comm))
@@ -240,16 +245,16 @@ mp <- function(nmf_factors,
 
 #' @param x A `mpnmf` object.
 #' @param s_min A scalar integer indicates the minimal number of samples to
-#' define the meta program.
+#' define the meta program. Default: `3`.
 #' @export
 #' @rdname mp
-print.mpnmf <- function(x, s_min = NULL, ...) {
+print.mpnmf <- function(x, s_min = 3L, ...) {
     print(mp_programs(x, s_min))
 }
 
 #' @export
 #' @rdname mp
-mp_programs <- function(x, s_min = NULL) {
+mp_programs <- function(x, s_min = 3L) {
     assert_s3_class(x, "mpnmf")
     assert_number(s_min, null_ok = TRUE)
     mp_programs <- x$mp_programs
@@ -261,7 +266,7 @@ mp_programs <- function(x, s_min = NULL) {
 
 #' @export
 #' @rdname mp
-mp_scores <- function(x, s_min = NULL) {
+mp_scores <- function(x, s_min = 3L) {
     assert_s3_class(x, "mpnmf")
     assert_number(s_min, null_ok = TRUE)
     mp_scores <- x$mp_scores
@@ -275,7 +280,7 @@ mp_scores <- function(x, s_min = NULL) {
 #' define the program signature.
 #' @export
 #' @rdname mp
-mp_signatures <- function(x, s_min = NULL, n_signatures = 20L) {
+mp_signatures <- function(x, s_min = 3L, n_signatures = 20L) {
     assert_(n_signatures, function(x) {
         is.numeric(x) && is_scalar(x) && x >= 1L
     }, "a positive integer")
