@@ -36,8 +36,8 @@
 #' @param ... Additional arguments passed to [cutree][stats::cutree] or
 #' [cutreeDynamic][dynamicTreeCut::cutreeDynamic] or `igraph::cluster_*`
 #' function (when `cluster` was passed as a function, ...  will not be used).
-#' @note When using a cutom function in `cluster`, you must follow the labels of
-#' the tree or graph vertex names, that means you must return the groups in the
+#' @note When using a cutom function in `cluster`, you must follow the tree
+#' nodes (or graph vertex) names, that means you must return the groups in the
 #' same order of the tree nodes (or graph vertex) name. Since the internal will
 #' restore the program names using the tree nodes (or graph vertex) name.
 #' @return A `mpnmf` object.
@@ -225,8 +225,8 @@ mp <- function(nmf_factors, n_signatures = 20L,
         stats = stats,
         mp_scores = mp_scores,
         mp_signatures = lapply(mp_scores, function(mp_score) {
-            mp_scores <- sort(mp_scores, decreasing = TRUE)
-            names(mp_scores)[seq_len(n_signatures)]
+            mp_score <- sort(mp_score, decreasing = TRUE)
+            names(mp_score)[seq_len(n_signatures)]
         }),
         class = "mpnmf"
     )
