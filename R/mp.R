@@ -50,6 +50,9 @@
 #'  - `stats`: A list of statistics for tree or graph object
 #'
 #' `mp_signatures`: A list of features to define the meta program signature.
+#' `mp_samples`: A list of samples indicates where the meta program is.
+#' `mp_coverage`: A numeric indicates the fraction of samples the meta program
+#'                was detected
 #'
 #' @export
 mp <- function(nmf_factors,
@@ -281,10 +284,10 @@ mp_scores <- function(x, s_min = 3L) {
 #' @export
 #' @rdname mp
 mp_signatures <- function(x, s_min = 3L, n_signatures = 20L) {
+    mp_scores <- mp_scores(x, s_min = s_min)
     assert_(n_signatures, function(x) {
         is.numeric(x) && is_scalar(x) && x >= 1L
     }, "a positive integer")
-    mp_scores <- mp_scores(x, s_min = s_min)
     n_signatures <- max(0L, as.integer(n_signatures))
     if (n_signatures > length(mp_scores[[1L]])) {
         cli::cli_warn(paste(
@@ -299,6 +302,28 @@ mp_signatures <- function(x, s_min = 3L, n_signatures = 20L) {
     })
 }
 
-mp_n_samples <- function(x) {
-    lengths(lapply(x$mp_samples, unique))
+#' @export
+#' @rdname mp
+mp_samples <- function(x, s_min = 3L) {
+    assert_s3_class(x, "mpnmf")
+    assert_number(s_min, null_ok = TRUE)
+    mp_samples <- x$mp_samples
+    if (!is.null(s_min)) {
+        mp_samples <- mp_samples[mp_n_samples(x) >= s_min]
+    }
+    mp_samples
 }
+
+#' @export
+#' @rdname mp
+mp_coverage <- function(x, s_min = 3L) {
+    assert_s3_class(x, "mpnmf")
+    assert_number(s_min, null_ok = TRUE)
+    mp_totals <- mp_n_samples(x)
+    if (!is.null(s_min)) {
+        mp_totals <- mp_totals[mp_totals >= s_min]
+    }
+    mp_totals / length(unique(unlist(x$mp_samples, FALSE, FALSE)))
+}
+
+mp_n_samples <- function(x) lengths(lapply(x$mp_samples, unique))

@@ -6,6 +6,8 @@
 \alias{mp_programs}
 \alias{mp_scores}
 \alias{mp_signatures}
+\alias{mp_samples}
+\alias{mp_coverage}
 \title{Identify meta programs.}
 \usage{
 mp(
@@ -26,6 +28,10 @@ mp_programs(x, s_min = 3L)
 mp_scores(x, s_min = 3L)
 
 mp_signatures(x, s_min = 3L, n_signatures = 20L)
+
+mp_samples(x, s_min = 3L)
+
+mp_coverage(x, s_min = 3L)
 }
 \arguments{
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
@@ -81,6 +87,9 @@ In addition, following attributes are attached with this object
 }
 
 \code{mp_signatures}: A list of features to define the meta program signature.
+\code{mp_samples}: A list of samples indicates where the meta program is.
+\code{mp_coverage}: A numeric indicates the fraction of samples the meta program
+was detected
 }
 \description{
 Identify meta programs.
