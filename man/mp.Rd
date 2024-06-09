@@ -65,8 +65,10 @@ function (when \code{cluster} was passed as a function, ...  will not be used).}
 
 \item{x}{A \code{mpnmf} object.}
 
-\item{s_min}{A scalar integer indicates the minimal number of samples to
-define the meta program. Default: \code{3}.}
+\item{s_min}{A scalar integer indicates the minimal number of samples or a
+scalar numeric (\verb{0 < s_min < 1}) indicates the minimal proportion of samples
+to define the meta program. If \code{NULL}, no filters will be applied. Default:
+\code{3}.}
 
 \item{n_signatures}{A scalar integer to specify the number of features to
 define the program signature.}

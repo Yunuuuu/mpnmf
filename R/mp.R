@@ -247,8 +247,10 @@ mp <- function(nmf_factors,
 }
 
 #' @param x A `mpnmf` object.
-#' @param s_min A scalar integer indicates the minimal number of samples to
-#' define the meta program. Default: `3`.
+#' @param s_min A scalar integer indicates the minimal number of samples or a
+#' scalar numeric (`0 < s_min < 1`) indicates the minimal proportion of samples
+#' to define the meta program. If `NULL`, no filters will be applied. Default:
+#' `3`.
 #' @export
 #' @rdname mp
 print.mpnmf <- function(x, s_min = 3L, ...) {
@@ -258,25 +260,15 @@ print.mpnmf <- function(x, s_min = 3L, ...) {
 #' @export
 #' @rdname mp
 mp_programs <- function(x, s_min = 3L) {
-    assert_s3_class(x, "mpnmf")
-    assert_number(s_min, null_ok = TRUE)
-    mp_programs <- x$mp_programs
-    if (!is.null(s_min)) {
-        mp_programs <- mp_programs[mp_n_samples(x) >= s_min]
-    }
-    mp_programs
+    index <- mp_index(x, s_min)
+    x$mp_programs[index]
 }
 
 #' @export
 #' @rdname mp
 mp_scores <- function(x, s_min = 3L) {
-    assert_s3_class(x, "mpnmf")
-    assert_number(s_min, null_ok = TRUE)
-    mp_scores <- x$mp_scores
-    if (!is.null(s_min)) {
-        mp_scores <- mp_scores[mp_n_samples(x) >= s_min]
-    }
-    mp_scores
+    index <- mp_index(x, s_min)
+    x$mp_scores[index]
 }
 
 #' @param n_signatures A scalar integer to specify the number of features to
@@ -305,25 +297,33 @@ mp_signatures <- function(x, s_min = 3L, n_signatures = 20L) {
 #' @export
 #' @rdname mp
 mp_samples <- function(x, s_min = 3L) {
-    assert_s3_class(x, "mpnmf")
-    assert_number(s_min, null_ok = TRUE)
-    mp_samples <- x$mp_samples
-    if (!is.null(s_min)) {
-        mp_samples <- mp_samples[mp_n_samples(x) >= s_min]
-    }
-    mp_samples
+    index <- mp_index(x, s_min)
+    x$mp_samples[index]
 }
 
 #' @export
 #' @rdname mp
 mp_coverage <- function(x, s_min = 3L) {
-    assert_s3_class(x, "mpnmf")
-    assert_number(s_min, null_ok = TRUE)
-    mp_totals <- mp_n_samples(x)
-    if (!is.null(s_min)) {
-        mp_totals <- mp_totals[mp_totals >= s_min]
-    }
-    mp_totals / length(unique(unlist(x$mp_samples, FALSE, FALSE)))
+    index <- mp_index(x, s_min)
+    mp_totals <- lengths(lapply(x$mp_samples, unique))
+    mp_coverage <- mp_totals /
+        length(unique(unlist(x$mp_samples, FALSE, FALSE)))
+    mp_coverage[index]
 }
 
-mp_n_samples <- function(x) lengths(lapply(x$mp_samples, unique))
+mp_index <- function(x, s_min, call = rlang::caller_call()) {
+    assert_s3_class(x, "mpnmf", call = call)
+    assert_number(s_min, null_ok = TRUE, call = call)
+    mp_samples <- x$mp_samples
+    index <- seq_along(mp_samples)
+    if (!is.null(s_min)) {
+        n_samples <- lengths(lapply(mp_samples, unique))
+        if (s_min < 1L && s_min > 0L) {
+            n <- length(unique(unlist(mp_samples, FALSE, FALSE)))
+            index <- index[(n_samples / n) >= s_min]
+        } else {
+            index <- index[n_samples >= s_min]
+        }
+    }
+    index
+}
