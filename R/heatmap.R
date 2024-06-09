@@ -33,6 +33,7 @@ mp_heatmap <- function(
         palette <- RColorBrewer::brewer.pal(n, palette)
         names(palette) <- levels(stats$members)
     }
+    dist_fn <- function(x) stats::as.dist(1 - x[, rownames(x)])
     args <- list(
         matrix = mat, name = "similarity",
         left_annotation = ComplexHeatmap::HeatmapAnnotation(
@@ -44,23 +45,22 @@ mp_heatmap <- function(
             which = "column"
         ),
         col = col, ...,
+        row_split = stats$members,
+        column_split = stats$members,
+        clustering_distance_rows = dist_fn,
+        clustering_distance_rows = dist_fn,
         show_row_names = show_row_names,
         show_column_names = show_column_names
     )
     if (!is.null(stats$tree)) {
         # restore tree object from `mpnmf` object
-        args$clustering_distance_rows <- function(x) {
-            stats::as.dist(1 - x[, rownames(x)])
-        }
-        args$clustering_distance_columns <- function(x) {
-            stats::as.dist(1 - x[, rownames(x)])
-        }
-        args$clustering_method_rows <- stats$tree$method
-        args$clustering_method_columns <- stats$tree$method
-        args$row_dend_reorder <- TRUE
-        args$column_dend_reorder <- TRUE
-        args$row_split <- stats$members
-        args$column_split <- stats$members
+        args$clustering_method_rows <- args$clustering_method_columns <-
+            stats$tree$method
+    } else {
+        args$clustering_method_rows <- args$clustering_method_rows %||%
+            "ward.D2"
+        args$clustering_method_columns <- args$clustering_method_columns %||%
+            "ward.D2"
     }
     do.call(ComplexHeatmap::Heatmap, args)
 }
