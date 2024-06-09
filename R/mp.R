@@ -119,8 +119,9 @@ mp <- function(nmf_factors, n_signatures = 20L,
         apply(basis, 2L, identity, simplify = FALSE)
     })
 
-    # names: {sample}.{nmf} -------------------------------
-    sample_nms <- rep(sample_nms, times = lengths(nmf_factors))
+    # flatten vectors -------------------------------
+    sample_nms <- rep(sample_nms, times = lengths(program_scores))
+    # names: {sample}.{nmf}
     program_scores <- unlist(program_scores, recursive = FALSE)
     program_nms <- names(program_scores)
     duplicates <- duplicated(program_nms) |
