@@ -2,6 +2,8 @@
 % Please edit documentation in R/mp.R
 \name{mp}
 \alias{mp}
+\alias{mp_scores}
+\alias{mp_signatures}
 \title{Identify meta programs.}
 \usage{
 mp(
@@ -16,6 +18,10 @@ mp(
   ...,
   ids = NULL
 )
+
+mp_scores(x)
+
+mp_signatures(x)
 }
 \arguments{
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
@@ -51,6 +57,8 @@ Only be used when repr is "tree".}
 function (when \code{cluster} was passed as a function, ...  will not be used).}
 
 \item{ids}{Sample identifiers, must be the same length of nmf_factors.}
+
+\item{x}{A \code{mpnmf} object.}
 }
 \value{
 A \code{mpnmf} object with following attributes.

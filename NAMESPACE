@@ -2,3 +2,5 @@
 
 S3method(print,mpnmf)
 export(mp)
+export(mp_scores)
+export(mp_signatures)

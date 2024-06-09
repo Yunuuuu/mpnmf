@@ -245,3 +245,18 @@ print.mpnmf <- function(x, ...) {
     }
     print(x)
 }
+
+#' @param x A `mpnmf` object.
+#' @export
+#' @rdname mp
+mp_scores <- function(x) {
+    assert_s3_class(x, "mpnmf")
+    attr(x, "mp_scores")
+}
+
+#' @export
+#' @rdname mp
+mp_signatures <- function(x) {
+    assert_s3_class(x, "mpnmf")
+    attr(x, "mp_signatures")
+}
