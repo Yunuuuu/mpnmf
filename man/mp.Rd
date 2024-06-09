@@ -10,7 +10,6 @@
 \usage{
 mp(
   nmf_factors,
-  n_signatures = 20L,
   cor_method = "pearson",
   cor_min = 0.3,
   repr = "tree",
@@ -26,14 +25,11 @@ mp_programs(x, s_min = NULL)
 
 mp_scores(x, s_min = NULL)
 
-mp_signatures(x, s_min = NULL)
+mp_signatures(x, s_min = NULL, n_signatures = 20L)
 }
 \arguments{
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
 \link[NMF:basis-coef-methods]{basis}.}
-
-\item{n_signatures}{A scalar integer to specify the number of features to
-define the program signature.}
 
 \item{cor_method}{A character string indicating which correlation coefficient
 (or covariance) is to be computed. One of "pearson" (default), "kendall", or
@@ -64,6 +60,9 @@ function (when \code{cluster} was passed as a function, ...  will not be used).}
 
 \item{s_min}{A scalar integer indicates the minimal number of samples to
 define the meta program.}
+
+\item{n_signatures}{A scalar integer to specify the number of features to
+define the program signature.}
 }
 \value{
 \code{mp}: A list of class \code{mpnmf} object with following elements:
@@ -72,7 +71,6 @@ define the meta program.}
 \item \code{mp_samples}: A list of samples define the meta programs.
 \item \code{mp_scores}: A list of meta program scores, which were defined as the mean
 NMF factor basis of component programs.
-\item \code{mp_signatures}: Features to define the meta program signature.
 }
 
 In addition, following attributes are attached with this object
@@ -80,6 +78,8 @@ In addition, following attributes are attached with this object
 \item \code{similarity}: similarity matrix.
 \item \code{stats}: A list of statistics for tree or graph object
 }
+
+\code{mp_signatures}: A list of features to define the meta program signature.
 }
 \description{
 Identify meta programs.

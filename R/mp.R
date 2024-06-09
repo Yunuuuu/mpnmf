@@ -14,8 +14,6 @@
 #'
 #' @param nmf_factors A list of NMF factor matrix for each sample, see
 #' [basis][NMF::basis].
-#' @param n_signatures A scalar integer to specify the number of features to
-#' define the program signature.
 #' @param ids Sample identifiers, must be the same length of nmf_factors.
 #' @param cor_method A character string indicating which correlation coefficient
 #' (or covariance) is to be computed. One of "pearson" (default), "kendall", or
@@ -45,25 +43,21 @@
 #'  - `mp_samples`: A list of samples define the meta programs.
 #'  - `mp_scores`: A list of meta program scores, which were defined as the mean
 #'                 NMF factor basis of component programs.
-#'  - `mp_signatures`: Features to define the meta program signature.
-#'
+#' 
 #' In addition, following attributes are attached with this object
 #'  - `similarity`: similarity matrix.
 #'  - `stats`: A list of statistics for tree or graph object
 #'
+#' `mp_signatures`: A list of features to define the meta program signature.
+#'
 #' @export
-mp <- function(nmf_factors, n_signatures = 20L,
+mp <- function(nmf_factors,
                cor_method = "pearson", cor_min = 0.3,
                repr = "tree", cluster = NULL, dynamic = FALSE,
                ..., ids = NULL) {
     assert_(nmf_factors, function(x) {
         is.list(x) && all(vapply(x, is.matrix, logical(1L)))
     }, "a list of NMF factor matrix")
-
-    assert_(n_signatures, function(x) {
-        is.numeric(x) && is_scalar(x) && x >= 1L
-    }, "a positive integer")
-    n_signatures <- as.integer(n_signatures)
 
     assert_number(cor_min)
     repr <- match.arg(repr, c("tree", "graph"))
@@ -82,13 +76,6 @@ mp <- function(nmf_factors, n_signatures = 20L,
                 "all basis matrix must have identical rownames (features)"
             )
         }
-    }
-    if (n_signatures > length(features)) {
-        cli::cli_warn(paste(
-            "{.arg n_signatures} must be smaller than features of",
-            "NMF basis matrix"
-        ))
-        n_signatures <- length(features)
     }
 
     # add sample names if no name provided  ------------
@@ -232,10 +219,6 @@ mp <- function(nmf_factors, n_signatures = 20L,
         mp_score <- rowMeans(do.call(base::cbind, component_scores))
         mp_score / sum(mp_score)
     })
-    mp_signatures <- lapply(mp_scores, function(mp_score) {
-        mp_score <- sort(mp_score, decreasing = TRUE)
-        names(mp_score)[seq_len(n_signatures)]
-    })
 
     # restore names -----------------------------------------
     names(members) <- program_nms
@@ -247,8 +230,7 @@ mp <- function(nmf_factors, n_signatures = 20L,
         list(
             mp_programs = mp_programs,
             mp_samples = mp_samples,
-            mp_scores = mp_scores,
-            mp_signatures = mp_signatures
+            mp_scores = mp_scores
         ),
         similarity = similarity,
         stats = stats,
@@ -289,16 +271,27 @@ mp_scores <- function(x, s_min = NULL) {
     mp_scores
 }
 
+#' @param n_signatures A scalar integer to specify the number of features to
+#' define the program signature.
 #' @export
 #' @rdname mp
-mp_signatures <- function(x, s_min = NULL) {
-    assert_s3_class(x, "mpnmf")
-    assert_number(s_min, null_ok = TRUE)
-    mp_signatures <- x$mp_signatures
-    if (!is.null(s_min)) {
-        mp_signatures <- mp_signatures[mp_n_samples(x) >= s_min]
+mp_signatures <- function(x, s_min = NULL, n_signatures = 20L) {
+    assert_(n_signatures, function(x) {
+        is.numeric(x) && is_scalar(x) && x >= 1L
+    }, "a positive integer")
+    mp_scores <- mp_scores(x, s_min = s_min)
+    n_signatures <- max(0L, as.integer(n_signatures))
+    if (n_signatures > length(mp_scores[[1L]])) {
+        cli::cli_warn(paste(
+            "{.arg n_signatures} must be smaller than features of",
+            "NMF basis matrix"
+        ))
+        n_signatures <- length(mp_scores[[1L]])
     }
-    mp_signatures
+    lapply(mp_scores, function(mp_score) {
+        mp_score <- sort(mp_score, decreasing = TRUE)
+        names(mp_score)[seq_len(n_signatures)]
+    })
 }
 
 mp_n_samples <- function(x) {
