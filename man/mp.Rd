@@ -53,7 +53,14 @@ function (when \code{cluster} was passed as a function, ...  will not be used).}
 \item{ids}{Sample identifiers, must be the same length of nmf_factors.}
 }
 \value{
-A \code{mpnmf} object.
+A \code{mpnmf} object with following attributes.
+\itemize{
+\item \code{similarity}: similarity matrix.
+\item \code{stats}: A list of statistics for tree or graph object
+\item \code{mp_scores}: meta program scores, which were defined as the mean NMF
+factor basis of component programs.
+\item \code{mp_signatures}: Features to define the meta program signature
+}
 }
 \description{
 Identify meta programs.

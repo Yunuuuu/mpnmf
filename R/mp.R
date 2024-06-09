@@ -40,7 +40,12 @@
 #' nodes (or graph vertex) names, that means you must return the groups in the
 #' same order of the tree nodes (or graph vertex) name. Since the internal will
 #' restore the program names using the tree nodes (or graph vertex) name.
-#' @return A `mpnmf` object.
+#' @return A `mpnmf` object with following attributes.
+#'  - `similarity`: similarity matrix.
+#'  - `stats`: A list of statistics for tree or graph object
+#'  - `mp_scores`: meta program scores, which were defined as the mean NMF
+#'    factor basis of component programs.
+#'  - `mp_signatures`: Features to define the meta program signature 
 #' @export
 mp <- function(nmf_factors, n_signatures = 20L,
                cor_method = "pearson", cor_min = 0.3, s_min = 3L,
