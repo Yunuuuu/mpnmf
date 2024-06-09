@@ -283,8 +283,8 @@ mp_signatures <- function(x, s_min = 3L, n_signatures = 20L) {
     n_signatures <- max(0L, as.integer(n_signatures))
     if (n_signatures > length(mp_scores[[1L]])) {
         cli::cli_warn(paste(
-            "{.arg n_signatures} must be smaller than features of",
-            "NMF basis matrix"
+            "{.arg n_signatures} must be smaller than the number of features",
+            "in NMF basis matrix"
         ))
         n_signatures <- length(mp_scores[[1L]])
     }
