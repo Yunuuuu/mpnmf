@@ -23,8 +23,6 @@
 #' @param cor_min Program-program similarity were filtered out if their
 #' connections were smaller (or equal) than `cor_min` individual tumor modules.
 #' Default: `0.3`.
-#' @param s_min A scalar integer indicates the minimal number of samples to
-#' define the meta program.
 #' @param repr A character string of "tree" or "graph" indicates the structure
 #' representation of Program-program similarity matrix.
 #' @param cluster A character string or function indicating how to clustering
@@ -40,15 +38,22 @@
 #' nodes (or graph vertex) names, that means you must return the groups in the
 #' same order of the tree nodes (or graph vertex) name. Since the internal will
 #' restore the program names using the tree nodes (or graph vertex) name.
-#' @return A `mpnmf` object with following attributes.
+#' @return
+#' `mp`: A list of class `mpnmf` object with following elements:
+#'
+#'  - `mp_programs`: A list of meta programs.
+#'  - `mp_samples`: A list of samples define the meta programs.
+#'  - `mp_scores`: A list of meta program scores, which were defined as the mean
+#'                 NMF factor basis of component programs.
+#'  - `mp_signatures`: Features to define the meta program signature.
+#'
+#' In addition, following attributes are attached with this object
 #'  - `similarity`: similarity matrix.
 #'  - `stats`: A list of statistics for tree or graph object
-#'  - `mp_scores`: meta program scores, which were defined as the mean NMF
-#'    factor basis of component programs.
-#'  - `mp_signatures`: Features to define the meta program signature 
+#'
 #' @export
 mp <- function(nmf_factors, n_signatures = 20L,
-               cor_method = "pearson", cor_min = 0.3, s_min = 3L,
+               cor_method = "pearson", cor_min = 0.3,
                repr = "tree", cluster = NULL, dynamic = FALSE,
                ..., ids = NULL) {
     assert_(nmf_factors, function(x) {
@@ -59,8 +64,8 @@ mp <- function(nmf_factors, n_signatures = 20L,
         is.numeric(x) && is_scalar(x) && x >= 1L
     }, "a positive integer")
     n_signatures <- as.integer(n_signatures)
+
     assert_number(cor_min)
-    assert_number(s_min)
     repr <- match.arg(repr, c("tree", "graph"))
 
     # check feature name provided ------------------------
@@ -77,6 +82,13 @@ mp <- function(nmf_factors, n_signatures = 20L,
                 "all basis matrix must have identical rownames (features)"
             )
         }
+    }
+    if (n_signatures > length(features)) {
+        cli::cli_warn(paste(
+            "{.arg n_signatures} must be smaller than features of",
+            "NMF basis matrix"
+        ))
+        n_signatures <- length(features)
     }
 
     # add sample names if no name provided  ------------
@@ -99,7 +111,6 @@ mp <- function(nmf_factors, n_signatures = 20L,
     }
 
     # convert NMF basis matrix into list -----------------------
-    sample_nms <- rep(sample_nms, times = lengths(nmf_factors))
     program_scores <- lapply(nmf_factors, function(basis) {
         # convert matrix into list ----------------------------
         if (is.null(colnames(basis))) {
@@ -109,6 +120,7 @@ mp <- function(nmf_factors, n_signatures = 20L,
     })
 
     # names: {sample}.{nmf} -------------------------------
+    sample_nms <- rep(sample_nms, times = lengths(nmf_factors))
     program_scores <- unlist(program_scores, recursive = FALSE)
     program_nms <- names(program_scores)
     duplicates <- duplicated(program_nms) |
@@ -165,11 +177,11 @@ mp <- function(nmf_factors, n_signatures = 20L,
             args <- list(...)
             if (is.null(args$k) && is.null(args$h)) {
                 args$h <- max(hcl$height) / 2
-            } else if (!is_scalar(args$h)) {
+            } else if (!is.null(args$h) && !is_scalar(args$h)) {
                 cli::cli_abort(
                     "{.arg h} must be a scalar to define the extract tree groups"
                 )
-            } else if (!is_scalar(args$k)) {
+            } else if (!is.null(args$k) && !is_scalar(args$k)) {
                 cli::cli_abort(
                     "{.arg k} must be a scalar to define the extract tree groups"
                 )
@@ -206,18 +218,24 @@ mp <- function(nmf_factors, n_signatures = 20L,
         members <- factor(igraph::membership(comm))
         stats <- list(graph = g, communities = comm)
     }
+
     # members: a named factor, value is the group identifier, and the name if
     #          the program index
-    mp_n_sample <- lengths(lapply(split(sample_nms, members), unique))
-    mp_index <- split(names(members), paste0("meta_program_", members))
-    mp_index <- lapply(mp_index[mp_n_sample >= s_min], as.integer)
+    mp_index <- lapply(split(names(members), members), as.integer)
+    names(mp_index) <- paste("meta_program", seq_along(mp_index), sep = "_")
 
-    mp_members <- lapply(mp_index, function(index) program_nms[index])
+    mp_programs <- lapply(mp_index, function(index) program_nms[index])
+    mp_samples <- lapply(mp_index, function(index) sample_nms[index])
     mp_scores <- lapply(mp_index, function(index) {
         component_scores <- program_scores[index]
         mp_score <- rowMeans(do.call(base::cbind, component_scores))
         mp_score / sum(mp_score)
     })
+    mp_signatures <- lapply(mp_scores, function(mp_score) {
+        mp_score <- sort(mp_score, decreasing = TRUE)
+        names(mp_score)[seq_len(n_signatures)]
+    })
+
     # restore names -----------------------------------------
     names(members) <- program_nms
     dimnames(similarity) <- list(program_nms, program_nms)
@@ -225,38 +243,63 @@ mp <- function(nmf_factors, n_signatures = 20L,
 
     # return results -----------------------------------------
     structure(
-        mp_members,
+        list(
+            mp_programs = mp_programs,
+            mp_samples = mp_samples,
+            mp_scores = mp_scores,
+            mp_signatures = mp_signatures
+        ),
         similarity = similarity,
         stats = stats,
-        mp_scores = mp_scores,
-        mp_signatures = lapply(mp_scores, function(mp_score) {
-            mp_score <- sort(mp_score, decreasing = TRUE)
-            names(mp_score)[seq_len(n_signatures)]
-        }),
         class = "mpnmf"
     )
 }
 
-
-#' @export
-print.mpnmf <- function(x, ...) {
-    for (at in setdiff(names(attributes(x)), "names")) {
-        attr(x, at) <- NULL
-    }
-    print(x)
-}
-
 #' @param x A `mpnmf` object.
+#' @param s_min A scalar integer indicates the minimal number of samples to
+#' define the meta program.
 #' @export
 #' @rdname mp
-mp_scores <- function(x) {
-    assert_s3_class(x, "mpnmf")
-    attr(x, "mp_scores")
+print.mpnmf <- function(x, s_min = NULL, ...) {
+    print(mp_programs(x, s_min))
 }
 
 #' @export
 #' @rdname mp
-mp_signatures <- function(x) {
+mp_programs <- function(x, s_min = NULL) {
     assert_s3_class(x, "mpnmf")
-    attr(x, "mp_signatures")
+    assert_number(s_min, null_ok = TRUE)
+    mp_programs <- x$mp_programs
+    if (!is.null(s_min)) {
+        mp_programs <- mp_programs[mp_n_samples(x) >= s_min]
+    }
+    mp_programs
+}
+
+#' @export
+#' @rdname mp
+mp_scores <- function(x, s_min = NULL) {
+    assert_s3_class(x, "mpnmf")
+    assert_number(s_min, null_ok = TRUE)
+    mp_scores <- x$mp_scores
+    if (!is.null(s_min)) {
+        mp_scores <- mp_scores[mp_n_samples(x) >= s_min]
+    }
+    mp_scores
+}
+
+#' @export
+#' @rdname mp
+mp_signatures <- function(x, s_min = NULL) {
+    assert_s3_class(x, "mpnmf")
+    assert_number(s_min, null_ok = TRUE)
+    mp_signatures <- x$mp_signatures
+    if (!is.null(s_min)) {
+        mp_signatures <- mp_signatures[mp_n_samples(x) >= s_min]
+    }
+    mp_signatures
+}
+
+mp_n_samples <- function(x) {
+    lengths(lapply(x$mp_samples, unique))
 }

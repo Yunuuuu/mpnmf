@@ -2,6 +2,8 @@
 % Please edit documentation in R/mp.R
 \name{mp}
 \alias{mp}
+\alias{print.mpnmf}
+\alias{mp_programs}
 \alias{mp_scores}
 \alias{mp_signatures}
 \title{Identify meta programs.}
@@ -11,7 +13,6 @@ mp(
   n_signatures = 20L,
   cor_method = "pearson",
   cor_min = 0.3,
-  s_min = 3L,
   repr = "tree",
   cluster = NULL,
   dynamic = FALSE,
@@ -19,9 +20,13 @@ mp(
   ids = NULL
 )
 
-mp_scores(x)
+\method{print}{mpnmf}(x, s_min = NULL, ...)
 
-mp_signatures(x)
+mp_programs(x, s_min = NULL)
+
+mp_scores(x, s_min = NULL)
+
+mp_signatures(x, s_min = NULL)
 }
 \arguments{
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
@@ -37,9 +42,6 @@ define the program signature.}
 \item{cor_min}{Program-program similarity were filtered out if their
 connections were smaller (or equal) than \code{cor_min} individual tumor modules.
 Default: \code{0.3}.}
-
-\item{s_min}{A scalar integer indicates the minimal number of samples to
-define the meta program.}
 
 \item{repr}{A character string of "tree" or "graph" indicates the structure
 representation of Program-program similarity matrix.}
@@ -59,15 +61,24 @@ function (when \code{cluster} was passed as a function, ...  will not be used).}
 \item{ids}{Sample identifiers, must be the same length of nmf_factors.}
 
 \item{x}{A \code{mpnmf} object.}
+
+\item{s_min}{A scalar integer indicates the minimal number of samples to
+define the meta program.}
 }
 \value{
-A \code{mpnmf} object with following attributes.
+\code{mp}: A list of class \code{mpnmf} object with following elements:
+\itemize{
+\item \code{mp_programs}: A list of meta programs.
+\item \code{mp_samples}: A list of samples define the meta programs.
+\item \code{mp_scores}: A list of meta program scores, which were defined as the mean
+NMF factor basis of component programs.
+\item \code{mp_signatures}: Features to define the meta program signature.
+}
+
+In addition, following attributes are attached with this object
 \itemize{
 \item \code{similarity}: similarity matrix.
 \item \code{stats}: A list of statistics for tree or graph object
-\item \code{mp_scores}: meta program scores, which were defined as the mean NMF
-factor basis of component programs.
-\item \code{mp_signatures}: Features to define the meta program signature
 }
 }
 \description{
