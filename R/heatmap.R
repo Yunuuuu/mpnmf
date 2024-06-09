@@ -3,7 +3,7 @@
 #' @param x A [mpnmf][mp] object.
 #' @param ... Additional arguments passed to [Heatmap][ComplexHeatmap::Heatmap].
 #' @inheritParams ComplexHeatmap::Heatmap
-#' @param palette A named color define to meta program bar color in top and
+#' @param palette A named character define to meta program color bar in top and
 #' left. Can also be a string of palette name in
 #' [RColorBrewer][RColorBrewer::brewer.pal].
 #' @export
