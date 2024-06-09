@@ -134,7 +134,7 @@ mp <- function(nmf_factors, n_signatures = 20L,
             if (!is_scalar(cluster)) {
                 cli::cli_abort("{.arg cluster} must be a scalar string")
             }
-            hcl <- do.call(stats::hclust, c(d = dist, method = cluster))
+            hcl <- do.call(stats::hclust, list(d = dist, method = cluster))
         } else if (is.function(cluster)) {
             if (!inherits(hcl <- cluster(dist), "hclust")) {
                 cli::cli_abort(
