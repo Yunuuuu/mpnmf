@@ -8,7 +8,7 @@ mp(
   nmf_factors,
   n_signatures = 20L,
   cor_method = "pearson",
-  cor_threthold = 0.3,
+  cor_min = 0.3,
   s_min = 3L,
   repr = "tree",
   cluster = NULL,
@@ -28,9 +28,9 @@ define the program signature.}
 (or covariance) is to be computed. One of "pearson" (default), "kendall", or
 "spearman": can be abbreviated. See \link{cor}.}
 
-\item{cor_threthold}{Program-program similarity were filtered out if their
-connections were smaller (or equal) than \code{cor_threthold} individual tumor
-modules. Default: \code{0.3}.}
+\item{cor_min}{Program-program similarity were filtered out if their
+connections were smaller (or equal) than \code{cor_min} individual tumor modules.
+Default: \code{0.3}.}
 
 \item{s_min}{A scalar integer indicates the minimal number of samples to
 define the meta program.}

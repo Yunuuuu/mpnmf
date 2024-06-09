@@ -20,9 +20,9 @@
 #' @param cor_method A character string indicating which correlation coefficient
 #' (or covariance) is to be computed. One of "pearson" (default), "kendall", or
 #' "spearman": can be abbreviated. See [cor].
-#' @param cor_threthold Program-program similarity were filtered out if their
-#' connections were smaller (or equal) than `cor_threthold` individual tumor
-#' modules. Default: `0.3`.
+#' @param cor_min Program-program similarity were filtered out if their
+#' connections were smaller (or equal) than `cor_min` individual tumor modules.
+#' Default: `0.3`.
 #' @param s_min A scalar integer indicates the minimal number of samples to
 #' define the meta program.
 #' @param repr A character string of "tree" or "graph" indicates the structure
@@ -43,7 +43,7 @@
 #' @return A `mpnmf` object.
 #' @export
 mp <- function(nmf_factors, n_signatures = 20L,
-               cor_method = "pearson", cor_threthold = 0.3, s_min = 3L,
+               cor_method = "pearson", cor_min = 0.3, s_min = 3L,
                repr = "tree", cluster = NULL, dynamic = FALSE,
                ..., ids = NULL) {
     assert_(nmf_factors, function(x) {
@@ -54,7 +54,7 @@ mp <- function(nmf_factors, n_signatures = 20L,
         is.numeric(x) && is_scalar(x) && x >= 1L
     }, "a positive integer")
     n_signatures <- as.integer(n_signatures)
-    assert_number(cor_threthold)
+    assert_number(cor_min)
     assert_number(s_min)
     repr <- match.arg(repr, c("tree", "graph"))
 
@@ -123,7 +123,7 @@ mp <- function(nmf_factors, n_signatures = 20L,
         do.call(base::cbind, program_scores),
         method = cor_method
     )
-    similarity[abs(similarity) <= cor_threthold] <- 0
+    similarity[abs(similarity) <= cor_min] <- 0
 
     # cluster all programs to identify meta programs -----------
     if (repr == "tree") {
@@ -150,7 +150,7 @@ mp <- function(nmf_factors, n_signatures = 20L,
                 )
             )
         }
-        stats <- list(dist = dist, tree = hcl)
+        stats <- list(tree = hcl)
         if (dynamic) {
             members <- dynamicTreeCut::cutreeDynamic(
                 dendro = hcl, ...,
@@ -230,4 +230,13 @@ mp <- function(nmf_factors, n_signatures = 20L,
         }),
         class = "mpnmf"
     )
+}
+
+
+#' @export
+print.mpnmf <- function(x, ...) {
+    for (at in setdiff(names(attributes(x)), "names")) {
+        attr(x, at) <- NULL
+    }
+    print(x)
 }
