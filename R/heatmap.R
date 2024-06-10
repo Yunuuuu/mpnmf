@@ -42,7 +42,9 @@ mp_heatmap <- function(
         ),
         top_annotation = ComplexHeatmap::HeatmapAnnotation(
             MP = stats$members, col = list(MP = palette),
-            which = "column"
+            which = "column",
+            show_annotation_name = FALSE,
+            annotation_legend_param = list(title = NULL)
         ),
         col = col, ...,
         row_split = stats$members,

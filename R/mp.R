@@ -215,10 +215,10 @@ mp <- function(nmf_factors,
         stats <- list(graph = g, communities = comm)
     }
 
-    # members: a named factor, value is the group identifier, and the name if
+    # members: a named factor, value is the group identifier, and the name is
     #          the program index
+    levels(members) <- paste0("MP", levels(members))
     mp_index <- lapply(split(names(members), members), as.integer)
-    names(mp_index) <- paste("meta_program", seq_along(mp_index), sep = "_")
 
     mp_programs <- lapply(mp_index, function(index) program_nms[index])
     mp_samples <- lapply(mp_index, function(index) sample_nms[index])
@@ -250,23 +250,23 @@ mp <- function(nmf_factors,
 #' @param s_min A scalar integer indicates the minimal number of samples or a
 #' scalar numeric (`0 < s_min < 1`) indicates the minimal proportion of samples
 #' to define the meta program. If `NULL`, no filters will be applied. Default:
-#' `3`.
+#' `1/3`.
 #' @export
 #' @rdname mp
-print.mpnmf <- function(x, s_min = 3L, ...) {
+print.mpnmf <- function(x, s_min = 1 / 3, ...) {
     print(mp_programs(x, s_min))
 }
 
 #' @export
 #' @rdname mp
-mp_programs <- function(x, s_min = 3L) {
+mp_programs <- function(x, s_min = 1 / 3) {
     index <- mp_index(x, s_min)
     x$mp_programs[index]
 }
 
 #' @export
 #' @rdname mp
-mp_scores <- function(x, s_min = 3L) {
+mp_scores <- function(x, s_min = 1 / 3) {
     index <- mp_index(x, s_min)
     x$mp_scores[index]
 }
@@ -275,7 +275,7 @@ mp_scores <- function(x, s_min = 3L) {
 #' define the program signature.
 #' @export
 #' @rdname mp
-mp_signatures <- function(x, s_min = 3L, n_signatures = 20L) {
+mp_signatures <- function(x, s_min = 1 / 3, n_signatures = 20L) {
     mp_scores <- mp_scores(x, s_min = s_min)
     assert_(n_signatures, function(x) {
         is.numeric(x) && is_scalar(x) && x >= 1L
@@ -296,14 +296,14 @@ mp_signatures <- function(x, s_min = 3L, n_signatures = 20L) {
 
 #' @export
 #' @rdname mp
-mp_samples <- function(x, s_min = 3L) {
+mp_samples <- function(x, s_min = 1 / 3) {
     index <- mp_index(x, s_min)
     x$mp_samples[index]
 }
 
 #' @export
 #' @rdname mp
-mp_coverage <- function(x, s_min = 3L) {
+mp_coverage <- function(x, s_min = 1 / 3) {
     index <- mp_index(x, s_min)
     mp_totals <- lengths(lapply(x$mp_samples, unique))
     mp_coverage <- mp_totals /

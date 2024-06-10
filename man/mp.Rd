@@ -21,17 +21,17 @@ mp(
   ids = NULL
 )
 
-\method{print}{mpnmf}(x, s_min = 3L, ...)
+\method{print}{mpnmf}(x, s_min = 1/3, ...)
 
-mp_programs(x, s_min = 3L)
+mp_programs(x, s_min = 1/3)
 
-mp_scores(x, s_min = 3L)
+mp_scores(x, s_min = 1/3)
 
-mp_signatures(x, s_min = 3L, n_signatures = 20L)
+mp_signatures(x, s_min = 1/3, n_signatures = 20L)
 
-mp_samples(x, s_min = 3L)
+mp_samples(x, s_min = 1/3)
 
-mp_coverage(x, s_min = 3L)
+mp_coverage(x, s_min = 1/3)
 }
 \arguments{
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
@@ -68,7 +68,7 @@ function (when \code{cluster} was passed as a function, ...  will not be used).}
 \item{s_min}{A scalar integer indicates the minimal number of samples or a
 scalar numeric (\verb{0 < s_min < 1}) indicates the minimal proportion of samples
 to define the meta program. If \code{NULL}, no filters will be applied. Default:
-\code{3}.}
+\code{1/3}.}
 
 \item{n_signatures}{A scalar integer to specify the number of features to
 define the program signature.}
