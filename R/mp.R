@@ -14,8 +14,6 @@
 #'
 #' @param nmf_factors A list of NMF factor matrix for each sample, see
 #' [basis][NMF::basis].
-#' @param logit A boolean value indicates whether to do logit transformation
-#' before calculating correlation coefficients.
 #' @param cor A character string indicating which correlation coefficient (or
 #' covariance) is to be computed. One of "pearson" (default), "kendall", or
 #' "spearman": can be abbreviated. Details see [cor].
@@ -60,15 +58,14 @@
 #'                was detected
 #'
 #' @export
-mp <- function(nmf_factors,
-               logit = TRUE, cor = "pearson", signed = TRUE, threshold = NULL,
+mp <- function(nmf_factors, cor = "pearson", signed = TRUE, threshold = NULL,
                repr = "tree", cluster = NULL, dynamic = FALSE,
                ..., ids = NULL) {
     assert_(nmf_factors, function(x) {
         is.list(x) && all(vapply(x, is.matrix, logical(1L)))
     }, "a list of NMF factor matrix")
 
-    assert_bool(logit)
+    # assert_bool(logit)
     assert_bool(signed)
     assert_number(threshold, null_ok = TRUE)
     threshold <- threshold %||% if (signed) 0.5 else 0.3
@@ -138,7 +135,7 @@ mp <- function(nmf_factors,
     names(program_scores) <- program_index
     # Since program scores should be lie in 0-1, we
     mat <- do.call(base::cbind, program_scores)
-    if (logit) mat <- log(mat / (1 - mat)) # do logit transformation
+    # if (logit) mat <- log(mat / (1 - mat)) # do logit transformation
     mat <- stats::cor(mat, method = cor)
 
     # use WGCNA: Signed Networks

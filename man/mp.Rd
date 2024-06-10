@@ -12,7 +12,6 @@
 \usage{
 mp(
   nmf_factors,
-  logit = TRUE,
   cor = "pearson",
   signed = TRUE,
   threshold = NULL,
@@ -38,9 +37,6 @@ mp_coverage(x, s_min = 1/3)
 \arguments{
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
 \link[NMF:basis-coef-methods]{basis}.}
-
-\item{logit}{A boolean value indicates whether to do logit transformation
-before calculating correlation coefficients.}
 
 \item{cor}{A character string indicating which correlation coefficient (or
 covariance) is to be computed. One of "pearson" (default), "kendall", or
