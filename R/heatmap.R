@@ -38,7 +38,8 @@ mp_heatmap <- function(
         matrix = mat, name = "similarity",
         left_annotation = ComplexHeatmap::HeatmapAnnotation(
             MP = stats$members, col = list(MP = palette),
-            which = "row", show_legend = FALSE
+            which = "row", show_legend = FALSE,
+            show_annotation_name = FALSE
         ),
         top_annotation = ComplexHeatmap::HeatmapAnnotation(
             MP = stats$members, col = list(MP = palette),
