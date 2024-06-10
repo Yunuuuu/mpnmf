@@ -50,7 +50,7 @@ mp_heatmap <- function(
         row_split = stats$members,
         column_split = stats$members,
         clustering_distance_rows = dist_fn,
-        clustering_distance_rows = dist_fn,
+        clustering_distance_columns = dist_fn,
         show_row_names = show_row_names,
         show_column_names = show_column_names
     )
