@@ -12,8 +12,10 @@
 \usage{
 mp(
   nmf_factors,
-  cor_method = "pearson",
-  cor_min = 0.3,
+  logit = TRUE,
+  cor = "pearson",
+  signed = TRUE,
+  threshold = NULL,
   repr = "tree",
   cluster = NULL,
   dynamic = FALSE,
@@ -37,13 +39,20 @@ mp_coverage(x, s_min = 1/3)
 \item{nmf_factors}{A list of NMF factor matrix for each sample, see
 \link[NMF:basis-coef-methods]{basis}.}
 
-\item{cor_method}{A character string indicating which correlation coefficient
-(or covariance) is to be computed. One of "pearson" (default), "kendall", or
+\item{logit}{A boolean value indicates whether to do logit transformation
+before calculating correlation coefficients.}
+
+\item{cor}{A character string indicating which correlation coefficient (or
+covariance) is to be computed. One of "pearson" (default), "kendall", or
 "spearman": can be abbreviated. Details see \link{cor}.}
 
-\item{cor_min}{Program-program similarity were filtered out if their
-connections were smaller (or equal) than \code{cor_min} individual tumor modules.
-Default: \code{0.3}.}
+\item{signed}{A boolean value indicates whether to use signed similarity. If
+\code{FALSE}, correlation coefficients will be transformed by \code{abs(s)}. If \code{TRUE},
+correlation coefficients will be transformed by \code{(1 + s) / 2}.}
+
+\item{threshold}{Program-program similarity were filtered out (set to \code{0}) if
+their connections were smaller (or equal) than \code{threshold}. Default: \code{0.5}
+for signed network, and \code{0.3} for unsigned network.}
 
 \item{repr}{A character string of "tree" or "graph" indicates the structure
 representation of Program-program similarity matrix.}

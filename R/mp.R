@@ -14,13 +14,17 @@
 #'
 #' @param nmf_factors A list of NMF factor matrix for each sample, see
 #' [basis][NMF::basis].
-#' @param ids Sample identifiers, must be the same length of nmf_factors.
-#' @param cor_method A character string indicating which correlation coefficient
-#' (or covariance) is to be computed. One of "pearson" (default), "kendall", or
+#' @param logit A boolean value indicates whether to do logit transformation
+#' before calculating correlation coefficients.
+#' @param cor A character string indicating which correlation coefficient (or
+#' covariance) is to be computed. One of "pearson" (default), "kendall", or
 #' "spearman": can be abbreviated. Details see [cor].
-#' @param cor_min Program-program similarity were filtered out if their
-#' connections were smaller (or equal) than `cor_min` individual tumor modules.
-#' Default: `0.3`.
+#' @param signed A boolean value indicates whether to use signed similarity. If
+#' `FALSE`, correlation coefficients will be transformed by `abs(s)`. If `TRUE`,
+#' correlation coefficients will be transformed by `(1 + s) / 2`.
+#' @param threshold Program-program similarity were filtered out (set to `0`) if
+#' their connections were smaller (or equal) than `threshold`. Default: `0.5`
+#' for signed network, and `0.3` for unsigned network.
 #' @param repr A character string of "tree" or "graph" indicates the structure
 #' representation of Program-program similarity matrix.
 #' @param cluster A character string or function indicating how to clustering
@@ -33,6 +37,7 @@
 #' @param ... Additional arguments passed to [cutree][stats::cutree] or
 #' [cutreeDynamic][dynamicTreeCut::cutreeDynamic] or `igraph::cluster_*`
 #' function (when `cluster` was passed as a function, ...  will not be used).
+#' @param ids Sample identifiers, must be the same length of nmf_factors.
 #' @note When using a cutom function in `cluster`, you must follow the tree
 #' nodes (or graph vertex) names, that means you must return the groups in the
 #' same order of the tree nodes (or graph vertex) name. Since the internal will
@@ -56,14 +61,17 @@
 #'
 #' @export
 mp <- function(nmf_factors,
-               cor_method = "pearson", cor_min = 0.3,
+               logit = TRUE, cor = "pearson", signed = TRUE, threshold = NULL,
                repr = "tree", cluster = NULL, dynamic = FALSE,
                ..., ids = NULL) {
     assert_(nmf_factors, function(x) {
         is.list(x) && all(vapply(x, is.matrix, logical(1L)))
     }, "a list of NMF factor matrix")
 
-    assert_number(cor_min)
+    assert_bool(logit)
+    assert_bool(signed)
+    assert_number(threshold, null_ok = TRUE)
+    threshold <- threshold %||% if (signed) 0.5 else 0.3
     repr <- match.arg(repr, c("tree", "graph"))
 
     # check feature name provided ------------------------
@@ -128,16 +136,24 @@ mp <- function(nmf_factors,
 
     # we use index as the program names in case of duplicated names
     names(program_scores) <- program_index
-    similarity <- stats::cor(
-        do.call(base::cbind, program_scores),
-        method = cor_method
-    )
-    similarity[abs(similarity) <= cor_min] <- 0
+    # Since program scores should be lie in 0-1, we
+    mat <- do.call(base::cbind, program_scores)
+    if (logit) mat <- log(mat / (1 - mat)) # do logit transformation
+    mat <- stats::cor(mat, method = cor)
+
+    # use WGCNA: Signed Networks
+    if (signed) {
+        mat <- (1 + mat) / 2
+    } else {
+        mat <- abs(mat)
+    }
+    mat[mat <= threshold] <- 0
 
     # cluster all programs to identify meta programs -----------
     if (repr == "tree") {
         assert_bool(dynamic)
-        dist <- stats::as.dist(1 - similarity)
+        # if we should use absolute value?
+        dist <- stats::as.dist(1 - mat)
         cluster <- cluster %||% "ward.D2"
         if (is.character(cluster)) {
             if (!is_scalar(cluster)) {
@@ -183,7 +199,7 @@ mp <- function(nmf_factors,
         members <- factor(members)
     } else {
         # vertex names will be the same with matrix names
-        g <- igraph::graph_from_adjacency_matrix(similarity,
+        g <- igraph::graph_from_adjacency_matrix(mat,
             mode = "undirected", diag = FALSE, weighted = TRUE
         )
         cluster <- cluster %||% "infomap"
@@ -230,7 +246,7 @@ mp <- function(nmf_factors,
 
     # restore names -----------------------------------------
     names(members) <- program_nms
-    dimnames(similarity) <- list(program_nms, program_nms)
+    dimnames(mat) <- list(program_nms, program_nms)
     stats <- c(stats, list(members = members))
 
     # return results -----------------------------------------
@@ -240,7 +256,7 @@ mp <- function(nmf_factors,
             mp_samples = mp_samples,
             mp_scores = mp_scores
         ),
-        similarity = similarity,
+        similarity = mat,
         stats = stats,
         class = "mpnmf"
     )
