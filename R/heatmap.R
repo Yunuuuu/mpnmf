@@ -55,7 +55,7 @@ mp_heatmap <- function(
         show_row_names = show_row_names,
         show_column_names = show_column_names
     )
-    args$name <- args$name %||% "Similarity"
+    args$name <- args$name %||% "Cor"
     if (!rlang::has_name(args, "row_title")) {
         args["row_title"] <- list(NULL)
     }
