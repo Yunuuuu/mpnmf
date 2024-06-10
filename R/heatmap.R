@@ -35,7 +35,7 @@ mp_heatmap <- function(
     }
     dist_fn <- function(x) stats::as.dist(1 - x[, rownames(x)])
     args <- list(
-        matrix = mat, name = "similarity",
+        matrix = mat,
         left_annotation = ComplexHeatmap::HeatmapAnnotation(
             MP = stats$members, col = list(MP = palette),
             which = "row", show_legend = FALSE,
@@ -55,7 +55,14 @@ mp_heatmap <- function(
         show_row_names = show_row_names,
         show_column_names = show_column_names
     )
-    if (!is.null(stats$tree)) {
+    args$name <- args$name %||% "Similarity"
+    if (!rlang::has_name(args, "row_title")) {
+        args["row_title"] <- list(NULL)
+    }
+    if (!rlang::has_name(args, "column_title")) {
+        args["column_title"] <- list(NULL)
+    }
+    if (!is.null(stats$tree) && !is.null(stats$tree$method)) {
         # restore tree object from `mpnmf` object
         args$clustering_method_rows <- args$clustering_method_columns <-
             stats$tree$method
