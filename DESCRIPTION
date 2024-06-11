@@ -13,7 +13,9 @@ Imports:
     ComplexHeatmap,
     dynamicTreeCut,
     igraph,
+    NMF,
     RColorBrewer,
+    RcppML,
     rlang (>= 1.1.0),
     stats,
     viridisLite

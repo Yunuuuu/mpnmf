@@ -12,8 +12,8 @@
 #' object. For example, cluster="louvain" will use
 #' [cluster_louvain][igraph::cluster_louvain].
 #'
-#' @param nmf_factors A list of NMF factor matrix for each sample, see
-#' [basis][NMF::basis].
+#' @param nmf_outs A list of NMF results for each sample,
+#' [hasBasis][NMF::hasBasis] and [hasCoef][NMF::hasCoef] must return `TRUE`.
 #' @param cor A character string indicating which correlation coefficient (or
 #' covariance) is to be computed. One of "pearson" (default), "kendall", or
 #' "spearman": can be abbreviated. Details see [cor].
@@ -51,25 +51,53 @@
 #' In addition, following attributes are attached with this object
 #'  - `similarity`: similarity matrix.
 #'  - `stats`: A list of statistics for tree or graph object
+#'  - `identity`: A list of character indicates which program the cells were
+#'                allocated.
 #'
 #' `mp_signatures`: A list of features to define the meta program signature.
-#' `mp_samples`: A list of samples indicates where the meta program is.
+#' `mp_samples`: A list of samples indicates where the meta program is from.
 #' `mp_coverage`: A numeric indicates the fraction of samples the meta program
-#'                was detected
+#'                was detected.
+#' `mp_identity`: A list or an atomic character indicates  which program the
+#'                cells were allocated.
 #'
 #' @export
-mp <- function(nmf_factors, cor = "pearson", signed = TRUE, threshold = NULL,
+mp <- function(nmf_outs, cor = "pearson", signed = TRUE, threshold = NULL,
                repr = "tree", cluster = NULL, dynamic = FALSE,
                ..., ids = NULL) {
-    assert_(nmf_factors, function(x) {
-        is.list(x) && all(vapply(x, is.matrix, logical(1L)))
-    }, "a list of NMF factor matrix")
+    assert_(nmf_outs, function(x) {
+        is.list(x) &&
+            all(vapply(x, NMF::hasBasis, logical(1L))) &&
+            all(vapply(x, NMF::hasCoef, logical(1L)))
+    }, "a list of valid NMF results")
 
     # assert_bool(logit)
     assert_bool(signed)
     assert_number(threshold, null_ok = TRUE)
     threshold <- threshold %||% if (signed) 0.5 else 0.3
     repr <- match.arg(repr, c("tree", "graph"))
+
+    # add sample names if no name provided  ------------
+    if (!is.null(ids)) {
+        if (length(ids) != length(nmf_outs)) {
+            cli::cli_abort(
+                "{.arg id} must be character with the same length of {.arg nmf_outs}"
+            )
+        }
+        names(nmf_outs) <- ids
+    }
+    sample_nms <- names(nmf_outs)
+
+    if (is.null(sample_nms)) {
+        names(nmf_outs) <- seq_along(nmf_outs)
+    } else if (anyDuplicated(sample_nms)) {
+        cli::cli_abort("names of {.arg nmf_outs} must be unique")
+    } else if (anyNA(sample_nms) || any(sample_nms == "")) {
+        cli::cli_abort("names of {.arg nmf_outs} cannot be missing")
+    }
+
+    nmf_factors <- lapply(nmf_outs, NMF::basis)
+    nmf_coef <- lapply(nmf_outs, NMF::coef)
 
     # check feature name provided ------------------------
     all_features <- lapply(nmf_factors, rownames)
@@ -87,25 +115,6 @@ mp <- function(nmf_factors, cor = "pearson", signed = TRUE, threshold = NULL,
         }
     }
 
-    # add sample names if no name provided  ------------
-    if (!is.null(ids)) {
-        if (length(ids) != length(nmf_factors)) {
-            cli::cli_abort(
-                "{.arg id} must be character with the same length of {.arg nmf_factors}"
-            )
-        }
-        names(nmf_factors) <- ids
-    }
-
-    sample_nms <- names(nmf_factors)
-    if (is.null(sample_nms)) {
-        names(nmf_factors) <- seq_along(nmf_factors)
-    } else if (anyDuplicated(sample_nms)) {
-        cli::cli_abort("names of {.arg nmf_factors} must be unique")
-    } else if (anyNA(sample_nms) || any(sample_nms == "")) {
-        cli::cli_abort("names of {.arg nmf_factors} cannot be missing")
-    }
-
     # convert NMF basis matrix into list -----------------------
     program_scores <- lapply(nmf_factors, function(basis) {
         # convert matrix into list ----------------------------
@@ -114,6 +123,17 @@ mp <- function(nmf_factors, cor = "pearson", signed = TRUE, threshold = NULL,
         }
         apply(basis, 2L, identity, simplify = FALSE)
     })
+
+    # allocate identity for each cells --------------------------
+    program_identity <- mapply(function(coefficient, sample) {
+        if (is.null(rownames(coefficient))) {
+            rownames(coefficient) <- seq_len(nrow(coefficient))
+        }
+        index <- apply(coefficient, 2L, which.max, simplify = TRUE)
+        out <- paste(sample, rownames(coefficient), sep = ".")[index]
+        if (!is.null(names(index))) names(out) <- names(index)
+        out
+    }, nmf_coef, names(nmf_coef), SIMPLIFY = FALSE)
 
     # flatten vectors -------------------------------
     sample_nms <- rep(sample_nms, times = lengths(program_scores))
@@ -253,6 +273,7 @@ mp <- function(nmf_factors, cor = "pearson", signed = TRUE, threshold = NULL,
             mp_samples = mp_samples,
             mp_scores = mp_scores
         ),
+        identity = program_identity,
         similarity = mat,
         stats = stats,
         class = "mpnmf"
@@ -275,6 +296,29 @@ print.mpnmf <- function(x, s_min = 1 / 3, ...) {
 mp_programs <- function(x, s_min = 1 / 3) {
     index <- mp_index(x, s_min)
     x$mp_programs[index]
+}
+
+#' @param flatten A boolean value indicates whether to return an atomic
+#' characters instead of a list.
+#' @export
+#' @rdname mp
+mp_identity <- function(x, s_min = 1 / 3, flatten = FALSE) {
+    mp_programs <- mp_programs(x, s_min)
+    identity_to_mp <- structure(
+        rep(names(mp_programs), times = lengths(mp_programs)),
+        names = unlist(mp_programs, FALSE, FALSE)
+    )
+    identity <- attr(x, "identity")
+    out <- lapply(identity, function(index) {
+        out <- identity_to_mp[index]
+        if (!is.null(names(index))) names(out) <- names(index)
+        out
+    })
+    if (flatten) {
+        names(out) <- NULL
+        out <- unlist(out, recursive = FALSE, use.names = TRUE)
+    }
+    out
 }
 
 #' @export

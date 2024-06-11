@@ -4,6 +4,7 @@
 \alias{mp}
 \alias{print.mpnmf}
 \alias{mp_programs}
+\alias{mp_identity}
 \alias{mp_scores}
 \alias{mp_signatures}
 \alias{mp_samples}
@@ -11,7 +12,7 @@
 \title{Identify meta programs.}
 \usage{
 mp(
-  nmf_factors,
+  nmf_outs,
   cor = "pearson",
   signed = TRUE,
   threshold = NULL,
@@ -26,6 +27,8 @@ mp(
 
 mp_programs(x, s_min = 1/3)
 
+mp_identity(x, s_min = 1/3, flatten = FALSE)
+
 mp_scores(x, s_min = 1/3)
 
 mp_signatures(x, s_min = 1/3, n_signatures = 20L)
@@ -35,8 +38,8 @@ mp_samples(x, s_min = 1/3)
 mp_coverage(x, s_min = 1/3)
 }
 \arguments{
-\item{nmf_factors}{A list of NMF factor matrix for each sample, see
-\link[NMF:basis-coef-methods]{basis}.}
+\item{nmf_outs}{A list of NMF results for each sample,
+\link[NMF:types]{hasBasis} and \link[NMF:types]{hasCoef} must return \code{TRUE}.}
 
 \item{cor}{A character string indicating which correlation coefficient (or
 covariance) is to be computed. One of "pearson" (default), "kendall", or
@@ -75,6 +78,9 @@ scalar numeric (\verb{0 < s_min < 1}) indicates the minimal proportion of sample
 to define the meta program. If \code{NULL}, no filters will be applied. Default:
 \code{1/3}.}
 
+\item{flatten}{A boolean value indicates whether to return an atomic
+characters instead of a list.}
+
 \item{n_signatures}{A scalar integer to specify the number of features to
 define the program signature.}
 }
@@ -91,12 +97,16 @@ In addition, following attributes are attached with this object
 \itemize{
 \item \code{similarity}: similarity matrix.
 \item \code{stats}: A list of statistics for tree or graph object
+\item \code{identity}: A list of character indicates which program the cells were
+allocated.
 }
 
 \code{mp_signatures}: A list of features to define the meta program signature.
-\code{mp_samples}: A list of samples indicates where the meta program is.
+\code{mp_samples}: A list of samples indicates where the meta program is from.
 \code{mp_coverage}: A numeric indicates the fraction of samples the meta program
-was detected
+was detected.
+\code{mp_identity}: A list or an atomic character indicates  which program the
+cells were allocated.
 }
 \description{
 Identify meta programs.
