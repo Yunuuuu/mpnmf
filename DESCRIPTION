@@ -3,7 +3,7 @@ Title: Meta Program from NMF (mpnmf)
 Version: 0.0.0.9000
 Authors@R: person("Yun", "Peng", email = "yunyunpp96@outlook.com",
                role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: Identify meta programs from NMF results.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
