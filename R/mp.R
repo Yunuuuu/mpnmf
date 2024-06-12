@@ -285,35 +285,6 @@ mp <- function(nmf_outs, cor = "pearson", signed = TRUE, threshold = NULL,
     )
 }
 
-# deal with RcppML `nmf` object, since `nmf` is not exported in CRAN version
-basis <- function(x) {
-    if (methods::is(x, "nmf")) {
-        x@w
-    } else {
-        NMF::basis(x)
-    }
-}
-
-nbasis <- function(x) {
-    if (methods::is(x, "nmf")) {
-        ncol(x@w)
-    } else {
-        NMF::nbasis(x)
-    }
-}
-
-hasBasis <- function(x) nrow(basis(x)) && nbasis(x)
-
-coef <- function(x) {
-    if (methods::is(x, "nmf")) {
-        x@h
-    } else {
-        NMF::coef(x)
-    }
-}
-
-hasCoef <- function(x) nbasis(x) && ncol(coef(x))
-
 #' @param x A `mpnmf` object.
 #' @param s_min A scalar integer indicates the minimal number of samples or a
 #' scalar numeric (`0 < s_min < 1`) indicates the minimal proportion of samples
