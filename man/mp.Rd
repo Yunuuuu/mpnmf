@@ -2,13 +2,6 @@
 % Please edit documentation in R/mp.R
 \name{mp}
 \alias{mp}
-\alias{print.mpnmf}
-\alias{mp_programs}
-\alias{mp_identity}
-\alias{mp_scores}
-\alias{mp_signatures}
-\alias{mp_samples}
-\alias{mp_coverage}
 \title{Identify meta programs.}
 \usage{
 mp(
@@ -22,20 +15,6 @@ mp(
   ...,
   ids = NULL
 )
-
-\method{print}{mpnmf}(x, s_min = 1/3, ...)
-
-mp_programs(x, s_min = 1/3)
-
-mp_identity(x, s_min = 1/3, flatten = FALSE)
-
-mp_scores(x, s_min = 1/3)
-
-mp_signatures(x, s_min = 1/3, n_signatures = 20L)
-
-mp_samples(x, s_min = 1/3)
-
-mp_coverage(x, s_min = 1/3)
 }
 \arguments{
 \item{nmf_outs}{A list of NMF results for each sample,
@@ -71,19 +50,6 @@ Only be used when repr is "tree".}
 function (when \code{cluster} was passed as a function, ...  will not be used).}
 
 \item{ids}{Sample identifiers, must be the same length of nmf_factors.}
-
-\item{x}{A \code{mpnmf} object.}
-
-\item{s_min}{A scalar integer indicates the minimal number of samples or a
-scalar numeric (\verb{0 < s_min < 1}) indicates the minimal proportion of samples
-to define the meta program. If \code{NULL}, no filters will be applied. Default:
-\code{1/3}.}
-
-\item{flatten}{A boolean value indicates whether to return an atomic
-characters instead of a list.}
-
-\item{n_signatures}{A scalar integer to specify the number of features to
-define the program signature.}
 }
 \value{
 \code{mp}: A list of class \code{mpnmf} object with following elements:
@@ -101,16 +67,6 @@ In addition, following attributes are attached with this object
 \item \code{identity}: A list of character indicates which program the cells were
 allocated.
 }
-
-\code{mp_signatures}: A list of features to define the meta program signature.
-
-\code{mp_samples}: A list of samples indicates where the meta program is from.
-
-\code{mp_coverage}: A numeric indicates the fraction of samples the meta program
-was detected.
-
-\code{mp_identity}: A list or an atomic character indicates  which program the
-cells were allocated.
 }
 \description{
 Identify meta programs.
