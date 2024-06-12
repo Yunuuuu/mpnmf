@@ -102,9 +102,12 @@ allocated.
 }
 
 \code{mp_signatures}: A list of features to define the meta program signature.
+
 \code{mp_samples}: A list of samples indicates where the meta program is from.
+
 \code{mp_coverage}: A numeric indicates the fraction of samples the meta program
 was detected.
+
 \code{mp_identity}: A list or an atomic character indicates  which program the
 cells were allocated.
 }
