@@ -13,10 +13,12 @@ Imports:
     ComplexHeatmap,
     dynamicTreeCut,
     igraph,
+    methods,
     NMF,
     RColorBrewer,
-    RcppML,
     rlang (>= 1.1.0),
     stats,
     viridisLite
+Suggests: 
+    RcppML
 ByteCompile: true

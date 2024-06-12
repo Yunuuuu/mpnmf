@@ -71,8 +71,8 @@ mp <- function(nmf_outs, cor = "pearson", signed = TRUE, threshold = NULL,
                ..., ids = NULL) {
     assert_(nmf_outs, function(x) {
         is.list(x) &&
-            all(vapply(x, NMF::hasBasis, logical(1L))) &&
-            all(vapply(x, NMF::hasCoef, logical(1L)))
+            all(vapply(x, hasBasis, logical(1L))) &&
+            all(vapply(x, hasCoef, logical(1L)))
     }, "a list of valid NMF results")
 
     # assert_bool(logit)
@@ -100,8 +100,8 @@ mp <- function(nmf_outs, cor = "pearson", signed = TRUE, threshold = NULL,
         cli::cli_abort("names of {.arg nmf_outs} cannot be missing")
     }
 
-    nmf_factors <- lapply(nmf_outs, NMF::basis)
-    nmf_coef <- lapply(nmf_outs, NMF::coef)
+    nmf_factors <- lapply(nmf_outs, basis)
+    nmf_coef <- lapply(nmf_outs, coef)
 
     # check feature name provided ------------------------
     all_features <- lapply(nmf_factors, rownames)
@@ -284,6 +284,35 @@ mp <- function(nmf_outs, cor = "pearson", signed = TRUE, threshold = NULL,
     )
 }
 
+# deal with RcppML `nmf` object, since `nmf` is not exported in CRAN version
+basis <- function(x) {
+    if (methods::is(x, "nmf")) {
+        x@w
+    } else {
+        NMF::basis(x)
+    }
+}
+
+nbasis <- function(x) {
+    if (methods::is(x, "nmf")) {
+        ncol(x@w)
+    } else {
+        NMF::nbasis(x)
+    }
+}
+
+hasBasis <- function(x) nrow(basis(x)) && nbasis(x)
+
+coef <- function(x) {
+    if (methods::is(x, "nmf")) {
+        x@h
+    } else {
+        NMF::coef(x)
+    }
+}
+
+hasCoef <- function(x) nbasis(x) && ncol(coef(x))
+
 #' @param x A `mpnmf` object.
 #' @param s_min A scalar integer indicates the minimal number of samples or a
 #' scalar numeric (`0 < s_min < 1`) indicates the minimal proportion of samples
@@ -308,6 +337,7 @@ mp_programs <- function(x, s_min = 1 / 3) {
 #' @rdname mp
 mp_identity <- function(x, s_min = 1 / 3, flatten = FALSE) {
     mp_programs <- mp_programs(x, s_min)
+    assert_bool(flatten)
     identity_to_mp <- structure(
         rep(names(mp_programs), times = lengths(mp_programs)),
         names = unlist(mp_programs, FALSE, FALSE)
