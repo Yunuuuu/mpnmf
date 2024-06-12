@@ -14,6 +14,7 @@
 #'
 #' @param nmf_outs A list of NMF results for each sample,
 #' [hasBasis][NMF::hasBasis] and [hasCoef][NMF::hasCoef] must return `TRUE`.
+#' Note: the internal has add methods for `RcppML nmf` object.
 #' @param cor A character string indicating which correlation coefficient (or
 #' covariance) is to be computed. One of "pearson" (default), "kendall", or
 #' "spearman": can be abbreviated. Details see [cor].

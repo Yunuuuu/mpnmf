@@ -39,7 +39,8 @@ mp_coverage(x, s_min = 1/3)
 }
 \arguments{
 \item{nmf_outs}{A list of NMF results for each sample,
-\link[NMF:types]{hasBasis} and \link[NMF:types]{hasCoef} must return \code{TRUE}.}
+\link[NMF:types]{hasBasis} and \link[NMF:types]{hasCoef} must return \code{TRUE}.
+Note: the internal has add methods for \verb{RcppML nmf} object.}
 
 \item{cor}{A character string indicating which correlation coefficient (or
 covariance) is to be computed. One of "pearson" (default), "kendall", or
