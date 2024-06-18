@@ -4,6 +4,10 @@
 
 is_scalar <- function(x) length(x) == 1L
 
+is_scalar_numeric <- function(x) {
+    length(x) == 1L && is.numeric(x)
+}
+
 # deal with RcppML `nmf` object, since `nmf` is not exported in CRAN version
 is_RcppML_nmf <- function(x) {
     methods::is(x, "nmf") && identical(attr(class(x), "package"), "RcppML")

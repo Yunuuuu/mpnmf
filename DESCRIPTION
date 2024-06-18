@@ -11,6 +11,7 @@ RoxygenNote: 7.3.1.9000
 Imports: 
     cli,
     ComplexHeatmap,
+    data.table,
     dynamicTreeCut,
     igraph,
     methods,
@@ -20,5 +21,6 @@ Imports:
     stats,
     viridisLite
 Suggests: 
+    cluster,
     RcppML
 ByteCompile: true
