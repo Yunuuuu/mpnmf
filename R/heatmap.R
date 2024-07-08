@@ -7,7 +7,7 @@
 #' [rect][grid::grid.rect].
 #' @inheritParams mpnmf-method
 #' @inheritParams ComplexHeatmap::Heatmap
-#' @param palette A named character define to meta program color bar in top and
+#' @param palette A character define to meta program color bar in top and
 #' left. Can also be a string of palette name in
 #' [RColorBrewer][RColorBrewer::brewer.pal].
 #' @export
@@ -35,7 +35,8 @@ mp_heatmap <- function(
             palette <- RColorBrewer::brewer.pal(n, "Paired")
             names(palette) <- levels(stats$members)
         }
-    } else if (rlang::is_string(palette) && is.null(names(palette))) {
+    } else if (rlang::is_string(palette) &&
+        any(palette == rownames(RColorBrewer::brewer.pal.info))) {
         palette <- match.arg(palette, rownames(RColorBrewer::brewer.pal.info))
         max <- RColorBrewer::brewer.pal.info[palette, "maxcolors"]
         if (max < n) {
@@ -45,11 +46,18 @@ mp_heatmap <- function(
         }
         palette <- RColorBrewer::brewer.pal(n, palette)
         names(palette) <- levels(stats$members)
+    } else if (length(palette) >= nlevels(stats$members)) {
+        palette <- palette[seq_len(nlevels(stats$members))]
+        if (is.null(names(palette))) names(palette) <- levels(stats$members)
+    } else {
+        cli::cli_abort(paste(
+            "{.arg palette} must be a character of length",
+            "{nlevels(stats$members)}"
+        ))
     }
     if (inherits(highlight, "gpar")) {
         sig_programs <- mp_programs(x, s_min = s_min)
-        sig_index <- match(levels(stats$members), names(sig_programs))
-        sig_index <- sig_index[!is.na(sig_index)]
+        sig_index <- match(names(sig_programs), levels(stats$members))
         highlight_layer_fun <- function(highlight) {
             slice_numbers <- strsplit(grid::current.viewport()$name,
                 "_",
