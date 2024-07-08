@@ -20,7 +20,7 @@ mp_heatmap <- function(
         highlight <- grid::gpar(lty = 2, lwd = 2, col = "red")
     } else if (inherits(highlight, "gpar")) {
         highlight$fill <- NA
-    } else if (isFALSE(highlight)) {
+    } else if (!isFALSE(highlight)) {
         cli::cli_abort(
             "{.arg highlight} must be a boolean value or a {.cls gpar} object"
         )
@@ -52,7 +52,7 @@ mp_heatmap <- function(
     } else {
         cli::cli_abort(paste(
             "{.arg palette} must be a character of length",
-            "{nlevels(stats$members)}"
+            "larger or equal than {nlevels(stats$members)}"
         ))
     }
     if (inherits(highlight, "gpar")) {
