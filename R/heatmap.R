@@ -93,8 +93,11 @@ mp_heatmap <- function(
     }
     dist_fn <- function(x) stats::as.dist(1 - x[, rownames(x)])
     if (!is.null(signatures)) {
-        align_to <- unlist(signatures, recursive = FALSE, use.names = FALSE)
-        names(align_to) <- rep(names(signatures), times = lengths(signatures))
+        if (!rlang::is_named2(signatures)) {
+            cli::cli_abort("{.arg signatures} must be a named list")
+        }
+        align_to <- split(seq_along(stats$members), stats$members)
+        align_to <- .subset(align_to, names(signatures))
         leftanno <- ComplexHeatmap::HeatmapAnnotation(
             MP = stats$members,
             textbox = ComplexHeatmap::anno_textbox(align_to, signatures),
