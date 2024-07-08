@@ -56,10 +56,13 @@ mp_heatmap <- function(
         ))
     }
     if (inherits(highlight, "gpar")) {
-        sig_programs <- mp_programs(x, s_min = s_min)
-        highlight_layer_fun <- function(j, highlight) {
-            current_program <- .subset(stats$members, .subset(j, 1L))
-            if (!any(as.character(current_program) == sig_programs)) {
+        sig_programs <- names(mp_programs(x, s_min = s_min))
+        highlight_layer_fun <- function(j, gpar) {
+            current_program <- .subset(
+                as.character(stats$members),
+                .subset(j, 1L)
+            )
+            if (!any(current_program == sig_programs)) {
                 return(NULL)
             }
             slice_numbers <- strsplit(grid::current.viewport()$name,
@@ -68,8 +71,7 @@ mp_heatmap <- function(
             )[[1L]]
             slice_numbers <- as.integer(utils::tail(slice_numbers, n = 2L))
             if (.subset(slice_numbers, 1L) == .subset(slice_numbers, 2L)) {
-                stats$members
-                grid::grid.rect(gp = highlight)
+                grid::grid.rect(gp = gpar)
             }
         }
         if (is.null(layer_fun)) {
