@@ -62,7 +62,7 @@ cnmf <- function(matrix, rank, threthold = 0L,
     # https://github.com/seanken/CompareSequence/blob/main/ComparePackage_R/CompareSeqR/R/cNMF.R#L53
     cli::cli_inform("Runing NMF")
     old_threads <- options(RcppML.threads = cores)
-    on.exit(do.call(`options`, old_threads))
+    on.exit(do.call(`options`, list(RcppML.threads = old_threads)))
     rank <- as.integer(rank)
     w_list <- lapply(seq_len(n_iters), function(i) {
         # row are genes
