@@ -7,6 +7,10 @@
 #' [rect][grid::grid.rect].
 #' @inheritParams mpnmf-method
 #' @param signatures A list of character define the program signatures.
+#' @param textbox_side A string, indicates the text box side. `"left"` or
+#' `"right"`. Default: `"right"`.
+#' @param textbox_params Additional arguments passed to
+#' [anno_textbox][ComplexHeatmap::anno_textbox].
 #' @inheritParams ComplexHeatmap::Heatmap
 #' @param palette A character define to meta program color bar in top and
 #' left. Can also be a string of palette name in
@@ -15,7 +19,7 @@
 mp_heatmap <- function(
     x, ...,
     highlight = TRUE, s_min = 1 / 3,
-    signatures = NULL,
+    signatures = NULL, textbox_side = NULL, textbox_params = list(),
     layer_fun = NULL,
     col = viridisLite::viridis(100, option = "A", direction = -1),
     palette = NULL, show_row_names = FALSE, show_column_names = FALSE) {
@@ -29,6 +33,8 @@ mp_heatmap <- function(
             "{.arg highlight} must be a boolean value or a {.cls gpar} object"
         )
     }
+    textbox_side <- textbox_side %||% textbox_params$side
+    textbox_side <- match.arg(textbox_side, c("right", "left"))
     mat <- attr(x, "similarity")
     stats <- attr(x, "stats")
     n <- nlevels(stats$members)
@@ -92,36 +98,48 @@ mp_heatmap <- function(
         internal_layer_fun <- layer_fun
     }
     dist_fn <- function(x) stats::as.dist(1 - x[, rownames(x)])
+    leftanno <- ComplexHeatmap::HeatmapAnnotation(
+        MP = stats$members,
+        col = list(MP = palette),
+        which = "row", show_legend = FALSE,
+        show_annotation_name = FALSE
+    )
+    rightanno <- NULL
     if (!is.null(signatures)) {
         if (!rlang::is_named2(signatures)) {
             cli::cli_abort("{.arg signatures} must be a named list")
         }
         align_to <- split(seq_along(stats$members), stats$members)
         align_to <- .subset(align_to, names(signatures))
-        leftanno <- ComplexHeatmap::HeatmapAnnotation(
-            MP = stats$members,
-            textbox = ComplexHeatmap::anno_textbox(align_to, signatures),
-            col = list(MP = palette),
-            which = "row", show_legend = FALSE,
-            show_annotation_name = FALSE
-        )
-    } else {
-        leftanno <- ComplexHeatmap::HeatmapAnnotation(
-            MP = stats$members,
-            col = list(MP = palette),
-            which = "row", show_legend = FALSE,
-            show_annotation_name = FALSE
-        )
+        textbox_params$side <- NULL
+        textbox <- do.call(ComplexHeatmap::anno_textbox, c(
+            textbox_params,
+            list(
+                align_to = align_to,
+                text = signatures,
+                side = textbox_side
+            )
+        ))
+        if (textbox_side == "left") {
+            leftanno <- ComplexHeatmap::HeatmapAnnotation(
+                MP = stats$members,
+                textbox = textbox,
+                col = list(MP = palette),
+                which = "row", show_legend = FALSE,
+                show_annotation_name = FALSE
+            )
+        } else {
+            rightanno <- ComplexHeatmap::HeatmapAnnotation(
+                textbox = textbox,
+                which = "row", show_legend = FALSE,
+                show_annotation_name = FALSE
+            )
+        }
     }
     args <- list(
         matrix = mat,
-        left_annotation = ComplexHeatmap::HeatmapAnnotation(
-            MP = stats$members,
-            textbox = leftanno,
-            col = list(MP = palette),
-            which = "row", show_legend = FALSE,
-            show_annotation_name = FALSE
-        ),
+        left_annotation = leftanno,
+        right_annotation = rightanno,
         top_annotation = ComplexHeatmap::HeatmapAnnotation(
             MP = stats$members, col = list(MP = palette),
             which = "column",

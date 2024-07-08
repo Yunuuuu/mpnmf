@@ -10,6 +10,8 @@ mp_heatmap(
   highlight = TRUE,
   s_min = 1/3,
   signatures = NULL,
+  textbox_side = NULL,
+  textbox_params = list(),
   layer_fun = NULL,
   col = viridisLite::viridis(100, option = "A", direction = -1),
   palette = NULL,
@@ -32,6 +34,12 @@ to define the meta program. If \code{NULL}, no filters will be applied. Default:
 \code{1/3}.}
 
 \item{signatures}{A list of character define the program signatures.}
+
+\item{textbox_side}{A string, indicates the text box side. \code{"left"} or
+\code{"right"}. Default: \code{"right"}.}
+
+\item{textbox_params}{Additional arguments passed to
+\link[ComplexHeatmap:anno_textbox]{anno_textbox}.}
 
 \item{layer_fun}{Similar as \code{cell_fun}, but is vectorized. Check \url{https://jokergoo.github.io/ComplexHeatmap-reference/book/a-single-heatmap.html#customize-the-heatmap-body} .}
 
