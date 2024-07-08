@@ -49,6 +49,7 @@ mp_heatmap <- function(
     if (inherits(highlight, "gpar")) {
         sig_programs <- mp_programs(x, s_min = s_min)
         sig_index <- match(levels(stats$members), names(sig_programs))
+        sig_index <- sig_index[!is.na(sig_index)]
         highlight_layer_fun <- function(highlight) {
             slice_numbers <- strsplit(grid::current.viewport()$name,
                 "_",
