@@ -6,13 +6,17 @@
 #' programs or a [gpar][grid::gpar] object define the highlight
 #' [rect][grid::grid.rect].
 #' @inheritParams mpnmf-method
+#' @param signatures A list of character define the program signatures.
 #' @inheritParams ComplexHeatmap::Heatmap
 #' @param palette A character define to meta program color bar in top and
 #' left. Can also be a string of palette name in
 #' [RColorBrewer][RColorBrewer::brewer.pal].
 #' @export
 mp_heatmap <- function(
-    x, ..., highlight = TRUE, s_min = 1 / 3, layer_fun = NULL,
+    x, ...,
+    highlight = TRUE, s_min = 1 / 3,
+    signatures = NULL,
+    layer_fun = NULL,
     col = viridisLite::viridis(100, option = "A", direction = -1),
     palette = NULL, show_row_names = FALSE, show_column_names = FALSE) {
     assert_s3_class(x, "mpnmf")
@@ -88,11 +92,30 @@ mp_heatmap <- function(
         internal_layer_fun <- layer_fun
     }
     dist_fn <- function(x) stats::as.dist(1 - x[, rownames(x)])
-
+    if (!is.null(signatures)) {
+        align_to <- unlist(signatures, recursive = FALSE, use.names = FALSE)
+        names(align_to) <- rep(names(signatures), times = lengths(signatures))
+        leftanno <- ComplexHeatmap::HeatmapAnnotation(
+            MP = stats$members,
+            textbox = ComplexHeatmap::anno_textbox(align_to, signatures),
+            col = list(MP = palette),
+            which = "row", show_legend = FALSE,
+            show_annotation_name = FALSE
+        )
+    } else {
+        leftanno <- ComplexHeatmap::HeatmapAnnotation(
+            MP = stats$members,
+            col = list(MP = palette),
+            which = "row", show_legend = FALSE,
+            show_annotation_name = FALSE
+        )
+    }
     args <- list(
         matrix = mat,
         left_annotation = ComplexHeatmap::HeatmapAnnotation(
-            MP = stats$members, col = list(MP = palette),
+            MP = stats$members,
+            textbox = leftanno,
+            col = list(MP = palette),
             which = "row", show_legend = FALSE,
             show_annotation_name = FALSE
         ),

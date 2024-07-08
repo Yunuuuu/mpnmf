@@ -9,6 +9,7 @@ mp_heatmap(
   ...,
   highlight = TRUE,
   s_min = 1/3,
+  signatures = NULL,
   layer_fun = NULL,
   col = viridisLite::viridis(100, option = "A", direction = -1),
   palette = NULL,
@@ -29,6 +30,8 @@ programs or a \link[grid:gpar]{gpar} object define the highlight
 scalar numeric (\verb{0 < s_min < 1}) indicates the minimal proportion of samples
 to define the meta program. If \code{NULL}, no filters will be applied. Default:
 \code{1/3}.}
+
+\item{signatures}{A list of character define the program signatures.}
 
 \item{layer_fun}{Similar as \code{cell_fun}, but is vectorized. Check \url{https://jokergoo.github.io/ComplexHeatmap-reference/book/a-single-heatmap.html#customize-the-heatmap-body} .}
 
