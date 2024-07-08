@@ -74,12 +74,12 @@ mp_heatmap <- function(
         }
         if (is.null(layer_fun)) {
             internal_layer_fun <- function(j, i, x, y, w, h, fill) {
-                highlight_layer_fun(highlight)
+                highlight_layer_fun(j, highlight)
             }
         } else {
             internal_layer_fun <- function(j, i, x, y, w, h, fill) {
                 layer_fun(j, i, x, y, w, h, fill)
-                highlight_layer_fun(highlight)
+                highlight_layer_fun(j, highlight)
             }
         }
     } else {
