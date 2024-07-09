@@ -33,6 +33,10 @@ mp_heatmap <- function(
             "{.arg highlight} must be a boolean value or a {.cls gpar} object"
         )
     }
+    assert_(
+        signatures, function(x) is.list(x) && rlang::is_named(x),
+        "a named list", null_ok = TRUE
+    )
     textbox_side <- textbox_side %||% textbox_params$side
     textbox_side <- match.arg(textbox_side, c("right", "left"))
     mat <- attr(x, "similarity")
@@ -116,9 +120,6 @@ mp_heatmap <- function(
     rightanno <- NULL
     if (!is.null(signatures) &&
         length(signatures <- signatures[lengths(signatures) > 0L])) {
-        if (!rlang::is_named2(signatures)) {
-            cli::cli_abort("{.arg signatures} must be a named list")
-        }
         align_to <- split(seq_along(stats$members), stats$members)
         align_to <- .subset(align_to, names(signatures))
         textbox_params$side <- NULL
