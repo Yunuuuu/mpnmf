@@ -32,7 +32,7 @@
 #' `"infomap"`.
 #' @param dynamic A boolean value indicates whether to use
 #' [cutreeDynamic][dynamicTreeCut::cutreeDynamic] to define the tree groups.
-#' Only be used when repr is "tree".
+#' Only be used when `repr` is `"tree"`.
 #' @param ... Additional arguments passed to [cutree][stats::cutree] or
 #' [cutreeDynamic][dynamicTreeCut::cutreeDynamic] or `igraph::cluster_*`
 #' function (when `cluster` was passed as a function, ...  will not be used).

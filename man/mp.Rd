@@ -43,7 +43,7 @@ cluster will be \code{"ward.D2"}, if repr is \code{"graph"}, cluster will be
 
 \item{dynamic}{A boolean value indicates whether to use
 \link[dynamicTreeCut:cutreeDynamic]{cutreeDynamic} to define the tree groups.
-Only be used when repr is "tree".}
+Only be used when \code{repr} is \code{"tree"}.}
 
 \item{...}{Additional arguments passed to \link[stats:cutree]{cutree} or
 \link[dynamicTreeCut:cutreeDynamic]{cutreeDynamic} or \verb{igraph::cluster_*}
