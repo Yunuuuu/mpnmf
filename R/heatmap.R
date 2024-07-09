@@ -50,15 +50,24 @@ mp_heatmap <- function(
         palette <- match.arg(palette, rownames(RColorBrewer::brewer.pal.info))
         max <- RColorBrewer::brewer.pal.info[palette, "maxcolors"]
         if (max < n) {
-            cli::cli_abort(
-                "{palette} is not sufficient to provide {.val {n}} colors"
-            )
+            cli::cli_abort(paste(
+                "{.arg palette} is not sufficient to",
+                "provide {.val {n}} color{?s}"
+            ))
         }
         palette <- RColorBrewer::brewer.pal(n, palette)
         names(palette) <- levels(stats$members)
     } else if (length(palette) >= nlevels(stats$members)) {
-        palette <- palette[seq_len(nlevels(stats$members))]
-        if (is.null(names(palette))) names(palette) <- levels(stats$members)
+        if (is.null(names(palette))) {
+            palette <- palette[seq_len(nlevels(stats$members))]
+            names(palette) <- levels(stats$members)
+        } else {
+            missing <- setdiff(levels(stats$members), names(palette))
+            if (length(missing)) {
+                cli::cli_abort("missing palette for program{?s}: {missing}")
+            }
+            palette <- palette[levels(stats$members)]
+        }
     } else {
         cli::cli_abort(paste(
             "{.arg palette} must be a character of length",
