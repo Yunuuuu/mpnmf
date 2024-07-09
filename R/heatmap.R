@@ -114,7 +114,8 @@ mp_heatmap <- function(
         show_annotation_name = FALSE
     )
     rightanno <- NULL
-    if (!is.null(signatures)) {
+    if (!is.null(signatures) &&
+        length(signatures <- signatures[lengths(signatures) > 0L])) {
         if (!rlang::is_named2(signatures)) {
             cli::cli_abort("{.arg signatures} must be a named list")
         }
